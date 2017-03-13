@@ -1,0 +1,62 @@
+#include <QTRSensors.h>  //Veyis KURALAY
+#define Kp 2.0 
+#define Kd 2.0  
+#define rightMaxSpeed 255 
+#define leftMaxSpeed 255 
+#define rightBaseSpeed 255 
+#define leftBaseSpeed 255
+#define NUM_SENSORS   8     
+#define TIMEOUT       1500  
+#define EMITTER_PIN   12     
+#define rightMotor1 3
+#define rightMotor2 4
+#define rightMotorPWM 12
+#define leftMotor1 8
+#define leftMotor2 9
+#define leftMotorPWM 13
+#define motorPower 8
+QTRSensorsRC qtrrc((unsigned char[]) {A0,A1,A2,A3,A4,A5},
+  NUM_SENSORS, TIMEOUT, EMITTER_PIN); 
+unsigned int sensorValues[NUM_SENSORS];
+void setup()
+{
+  pinMode(rightMotor1, OUTPUT);
+  pinMode(rightMotor2, OUTPUT);
+  pinMode(rightMotorPWM, OUTPUT);
+  pinMode(leftMotor1, OUTPUT);
+  pinMode(leftMotor2, OUTPUT);
+  pinMode(leftMotorPWM, OUTPUT);
+  pinMode(motorPower, OUTPUT);  
+  pinMode(13, OUTPUT);
+  Serial.begin(9600);
+  int i;
+   }
+int lastError = 0;
+void loop()
+{
+     unsigned int sensors[6];
+     qtrrc.read(sensorValues); 
+     unsigned int position = qtrrc.readLine(sensorValues,0,1);
+     int error = position - 1500; // 
+     int motorSpeed = Kp * error + Kd * (error - lastError);
+  lastError = error;
+  int rightMotorSpeed = rightBaseSpeed + motorSpeed;
+  int leftMotorSpeed = leftBaseSpeed - motorSpeed;
+  if (rightMotorSpeed > rightMaxSpeed ) rightMotorSpeed = rightMaxSpeed; 
+  if (leftMotorSpeed > leftMaxSpeed ) leftMotorSpeed = leftMaxSpeed; 
+  if (rightMotorSpeed < 0) rightMotorSpeed = 0; 
+  if (leftMotorSpeed < 0) leftMotorSpeed = 0; 
+        {
+  digitalWrite(motorPower, HIGH); 
+  digitalWrite(rightMotor1, HIGH);
+  digitalWrite(rightMotor2, LOW);
+  analogWrite(rightMotorPWM, rightMotorSpeed);
+  digitalWrite(motorPower, HIGH);
+  digitalWrite(leftMotor1, HIGH);
+  digitalWrite(leftMotor2, LOW);
+  analogWrite(leftMotorPWM, leftMotorSpeed);
+   }
+} 
+void wait(){
+    digitalWrite(motorPower, LOW);
+}
